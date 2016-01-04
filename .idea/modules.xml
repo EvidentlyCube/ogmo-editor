@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/OGMO Editor.iml" filepath="$PROJECT_DIR$/OGMO Editor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Ogmo-Editor.iml" filepath="$PROJECT_DIR$/Ogmo-Editor.iml" />
+    </modules>
+  </component>
+</project>
+

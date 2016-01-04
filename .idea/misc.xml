@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="EntryPointsManager">
+    <entry_points version="2.0" />
+  </component>
+  <component name="IdProvider" IDEtalkID="F8975D9DC9AF196918971EA43086B31B" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="4.6.0" project-jdk-type="Flex SDK Type (new)">
+    <output url="file://$PROJECT_DIR$/classes" />
+  </component>
+</project>
+
