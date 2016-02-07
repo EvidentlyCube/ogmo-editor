@@ -362,6 +362,88 @@
             return _selected;
         }
 
+        public function get json():Object {
+            var json:Object = {};
+
+            //basics
+            json.name = definition.name;
+            json.x = x;
+            json.y = y;
+
+            //Size if resizable
+            if (definition.resizableX) {
+                json.width = objWidth;
+            }
+            if (definition.resizableY) {
+                json.height = objHeight;
+            }
+
+            //Angle if rotatable
+            if (definition.rotatable) {
+                if (definition.exportRadians) {
+                    json.angle = Utils.degToRad(angle);
+                } else {
+                    json.angle = angle;
+                }
+            }
+
+            //values
+            json.values = Reader.writeValuesToJson(values);
+
+            json.nodes = [];
+            //nodes
+            for (var i:int = 0; i < nodes.numChildren; i++) {
+                json.nodes.push((nodes.getChildAt(i) as Node).json);
+            }
+
+            return json;
+        }
+
+        public function set json(value:Object):void {
+            var o:ObjectDefinition = Ogmo.project.getObjectDefinitionByName(value.name);
+            if (o) {
+                init(o);
+            } else {
+                throw new Error("Object not defined: \"" + value.name + "\"");
+            }
+
+            x = (int)(value.x);
+            y = (int)(value.y);
+
+            //Set the size
+            var w:int, h:int;
+            if (definition.resizableX) {
+                w = value.width;
+            } else {
+                w = definition.width;
+            }
+
+            if (definition.resizableY) {
+                h = value.height;
+            } else {
+                h = definition.height;
+            }
+
+            setSize(w, h);
+
+            //Angle if rotatable
+            if (definition.rotatable) {
+                if (definition.exportRadians) {
+                    angle = Utils.radToDeg(Number(value.angle));
+                } else {
+                    angle = Number(value.angle);
+                }
+            }
+
+            //set the values
+            Reader.readValuesJson(value.values, values);
+
+            //create the nodes
+            for each (var n:Object in value.node) {
+                addNode(new Node(this, n.x, n.y));
+            }
+        }
+
         public function get xml():XML {
             var xml:XML = <object/>;
 
@@ -388,7 +470,7 @@
             }
 
             //values
-            Reader.writeValues(xml, values);
+            Reader.writeValuesToXml(xml, values);
 
             //nodes
             for (var i:int = 0; i < nodes.numChildren; i++) {
@@ -436,7 +518,7 @@
             }
 
             //set the values
-            Reader.readValues(value, values);
+            Reader.readValuesXml(value, values);
 
             //create the nodes
             for each (var n:XML in value.node) {

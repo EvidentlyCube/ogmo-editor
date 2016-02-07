@@ -301,7 +301,7 @@
 
                 var fileStream:FileStream = new FileStream();
                 fileStream.open(tempFile, FileMode.WRITE);
-                fileStream.writeUTFBytes(level.xml.toString());
+                fileStream.writeUTFBytes(project.usesJson ? level.jsonString : level.xml.toString());
                 fileStream.close();
                 onSaveLevelSelect(null);
             }
@@ -312,7 +312,7 @@
         public function saveLevelAs():void {
             tempFile = new File(Ogmo.project.savingDirectory);
             tempFile.addEventListener(Event.SELECT, onSaveLevelSelect, false, 0, true);
-            tempFile.save(level.xml, level.levelName);
+            tempFile.save(project.usesJson ? level.jsonString : level.xml, level.levelName);
         }
 
         public function lookForLevel():void {
@@ -542,6 +542,69 @@
         /* =================== EVENTS =================== */
 
         private function onLoadLevelSelect(e:Event = null):void {
+            if (project.usesJson){
+                loadLevelJson();
+            } else {
+                loadLevelXml();
+            }
+        }
+
+        private function loadLevelJson():void{
+            //Open the stream
+            var stream:FileStream = new FileStream;
+            stream.open(tempFile, FileMode.READ);
+
+            //Read the level
+            var lvlJson:Object = JSON.parse(stream.readUTFBytes(stream.bytesAvailable));
+            stream.close();
+
+            //store the old level; close it
+            var tempLevel:Level = level;
+            closeLevel();
+
+            //Make the new level and add it
+            level = new Level(tempFile.name);
+            ogmo.addChildAt(level, 1);
+
+            //Populate it
+            if (Capabilities.isDebugger) {
+                //Don't catch errors if debug build
+                level.json = lvlJson;
+            }
+            else {
+                //Catch errors if release build
+                try {
+                    level.json = lvlJson;
+                }
+                catch (e:Error) {
+                    showMessage("Could not load level file:\n" + e.message, -1, true);
+                    onLoadLevelCancel();
+
+                    //Go back to the old level
+                    closeLevel();
+                    level = tempLevel;
+                    ogmo.addChildAt(level, 1);
+                    level.initListeners();
+                    level.setLayer(level.selectedLayerIndex);
+                    return;
+                }
+            }
+
+            //Show the message0
+            showMessage("Opened Level:\n" + tempFile.name);
+
+            //set the window title
+            setWindowTitle();
+
+            //Init level info window
+            windows.windowLevelInfo.populate();
+
+            //Clean up
+            tempFile = null;
+            System.gc();
+        }
+
+        private function loadLevelXml():void{
             //Open the stream
             var stream:FileStream = new FileStream;
             stream.open(tempFile, FileMode.READ);

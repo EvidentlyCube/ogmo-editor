@@ -1,5 +1,4 @@
 ﻿package editor.commons {
-    import editor.commons.Reader;
     import editor.definitions.*;
     import editor.events.*;
     import editor.layers.grid.GridLayer;
@@ -120,9 +119,9 @@
             selectedLayer.active = true;
         }
 
-        public function setLayer(to:int):void {
+        public function setLayer(target:int):void {
             //Error if invalid layer
-            if (to >= layersContainer.numChildren || to < 0) {
+            if (target >= layersContainer.numChildren || target < 0) {
                 throw new Error("Switching to non-existent layer!");
             }
 
@@ -132,12 +131,12 @@
             }
 
             //Activate the new one
-            _selectedLayerIndex = to;
+            _selectedLayerIndex = target;
             selectedLayer.active = true;
 
             resetLayersAlpha();
 
-            Ogmo.windows.setLayer(to);
+            Ogmo.windows.setLayer(target);
 
             //If the layer is a tile layer not allowed multiple tilesets, switch to its current tileset
             if (selectedLayer is TileLayer) {
@@ -171,23 +170,23 @@
             }
         }
 
-        public function setTileset(to:int):void {
+        public function setTileset(value:int):void {
             //Do nothing if that's the current tileset
-            if (Ogmo.project.tilesets[ to ] == selectedTileset) {
+            if (Ogmo.project.tilesets[ value ] == selectedTileset) {
                 return;
             }
 
             //Error if invalid tileset
-            if (to >= Ogmo.project.tilesetsCount || to < 0) {
+            if (value >= Ogmo.project.tilesetsCount || value < 0) {
                 throw new Error("Switching to non-existent tileset!");
             }
 
-            selectedTileset = Ogmo.project.tilesets[ to ];
+            selectedTileset = Ogmo.project.tilesets[ value ];
             selectedTilePoint.x = 0;
             selectedTilePoint.y = 0;
 
             //Set the tileset in the windows
-            Ogmo.windows.setTileset(to);
+            Ogmo.windows.setTileset(value);
 
             stage.dispatchEvent(new TilesetSelectEvent(selectedTileset));
         }
@@ -402,9 +401,9 @@
 
         /* ========================== EVENTS ========================== */
 
-        public function set zoom(to:int):void {
+        public function set zoom(value:int):void {
             var cur:int;
-            cur = Utils.within(0, to, ZOOMS.length - 1);
+            cur = Utils.within(0, value, ZOOMS.length - 1);
 
             holder.scaleX = ZOOMS[ cur ];
             //noinspection JSSuspiciousNameCombination
@@ -414,13 +413,67 @@
             Ogmo.windowMenu.refreshState();
         }
 
+        public function get jsonString():String {
+            return JSON.stringify(this.json);
+        }
+
+        public function get json():Object{
+            var json:Object = {};
+
+            json.options = Reader.writeValuesToJson(values);
+
+            if (Ogmo.project.exportLevelSize) {
+                json.width = _levelWidth;
+                json.height = _levelHeight;
+            }
+
+            //Layers
+            json.layers = {};
+            for (var i:int = 0; i < layersContainer.numChildren; i++) {
+                var layer:Layer = layersContainer.getChildAt(i) as Layer;
+                json.layers[layer.layerName] = layer.json;
+            }
+
+            return json;
+        }
+
+        public function set json(value:Object):void {
+            //values
+            Reader.readValuesJson(value.options, values);
+
+            setSize(
+                Reader.readIntJson(value.width, Ogmo.project.defaultWidth, "width", Ogmo.project.minWidth, Ogmo.project.maxWidth),
+                Reader.readIntJson(value.height, Ogmo.project.defaultHeight, "height", Ogmo.project.minHeight, Ogmo.project.maxHeight)
+            );
+
+            for (var layerName:String in value.layers) {
+                if (!value.layers.hasOwnProperty(layerName)){
+                    continue;
+                }
+
+                var isValidLayer:Boolean = false;
+                for (var i:int = 0; i < layersContainer.numChildren; i++) {
+                    var layer:Layer = layersContainer.getChildAt(i) as Layer;
+                    if (layerName == layer.layerName) {
+                        layer.json = value.layers[layerName];
+                        isValidLayer = true;
+                        break;
+                    }
+                }
+
+                if (!isValidLayer) {
+                    throw new Error("Layer \"" + layerName + "\" not defined for this project!");
+                }
+            }
+        }
+
         public function get xml():XML {
             var temp:XML;
             var ret:XML = <level></level>;
             ret.setName("level");
 
             //values
-            Reader.writeValues(ret, values);
+            Reader.writeValuesToXml(ret, values);
 
             if (Ogmo.project.exportLevelSize) {
                 //Stage width
@@ -445,20 +498,20 @@
             return ret;
         }
 
-        public function set xml(to:XML):void {
+        public function set xml(targetXml:XML):void {
             //values
-            Reader.readValues(to, values);
+            Reader.readValuesXml(targetXml, values);
 
-            for each (var xmlNode:XML in to.children()) {
+            for each (var xmlNode:XML in targetXml.children()) {
                 var nodeName:String = QName(xmlNode.name()).localName;
 
                 if (nodeName == "width") {
                     //<WIDTH>
-                    setSize(Reader.readInt(xmlNode, Ogmo.project.defaultWidth, "width", Ogmo.project.minWidth, Ogmo.project.maxWidth), levelHeight);
+                    setSize(Reader.readIntXml(xmlNode, Ogmo.project.defaultWidth, "width", Ogmo.project.minWidth, Ogmo.project.maxWidth), levelHeight);
                 }
                 else if (nodeName == "height") {
                     //<HEIGHT>
-                    setSize(levelWidth, Reader.readInt(xmlNode, Ogmo.project.defaultHeight, "height", Ogmo.project.minHeight, Ogmo.project.maxHeight));
+                    setSize(levelWidth, Reader.readIntXml(xmlNode, Ogmo.project.defaultHeight, "height", Ogmo.project.minHeight, Ogmo.project.maxHeight));
                 }
                 else {
                     //Layers!

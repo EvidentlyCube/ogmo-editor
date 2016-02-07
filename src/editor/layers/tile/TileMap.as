@@ -253,6 +253,35 @@
         }
 
         //Returns an XML representation of the tilemap
+        public function get json():Object{
+            var elements:Array = [];
+
+            for each (var column:Vector.<Tile> in _tiles){
+                for each(var tile:Tile in column){
+                    if (tile){
+                        elements.push(tile.json);
+                    }
+                }
+            }
+
+            return elements;
+        }
+
+        //Builds the tilemap from an XML representation
+        public function set json(value:Object):void{
+            clear();
+
+            var o:Object;
+            var p:Point;
+            if (_tileset){
+                for each (o in value){
+                    p = new Point(o.tx, o.ty);
+                    addTile(new Tile(_tileset, p, o.x, o.y));
+                }
+            }
+        }
+
+        //Returns an XML representation of the tilemap
         public function getXML(layerXML:XML):void{
             for each (var column:Vector.<Tile> in _tiles){
                 for each(var tile:Tile in column){
@@ -264,13 +293,13 @@
         }
 
         //Builds the tilemap from an XML representation
-        public function setXML(to:XML):void{
+        public function setXML(value:XML):void{
             clear();
 
             var o:XML;
             var p:Point;
             if (_tileset){
-                for each (o in to.tile){
+                for each (o in value.tile){
                     p = new Point(o.@tx, o.@ty);
                     addTile(new Tile(_tileset, p, o.@x, o.@y));
                 }

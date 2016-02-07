@@ -24,7 +24,11 @@
             return values;
         }
 
-        static public function readString(attr:*, def:String = ""):String {
+        static public function readStringJson(attr:*, def:String = ""):String {
+            return attr;
+        }
+
+        static public function readStringXml(attr:*, def:String = ""):String {
             if (attr.length() == 0) {
                 return def;
             }
@@ -33,7 +37,7 @@
             }
         }
 
-        static public function readInt(attr:*, def:int, error:String, min:int = int.MIN_VALUE, max:int = int.MAX_VALUE):int {
+        static public function readIntXml(attr:*, def:int, error:String, min:int = int.MIN_VALUE, max:int = int.MAX_VALUE):int {
             if (attr.length() == 0) {
                 return def;
             }
@@ -64,7 +68,58 @@
             }
         }
 
-        static public function readNumber(attr:*, def:Number, error:String, min:Number = int.MIN_VALUE, max:Number = int.MAX_VALUE):Number {
+        static public function readIntJson(attr:*, def:int, error:String, min:int = int.MIN_VALUE, max:int = int.MAX_VALUE):int {
+            var str:String = attr;
+            var match:String = "";
+            for (var i:int = 0; i < str.length; i++) {
+                match = match + "[0-9\\-]";
+            }
+            if (!str.match(match)) {
+                throw new Error("Expected integer value for " + error + ", got \"" + attr + "\".");
+            }
+            else {
+                var num:int = (int)(str);
+                if (num < min || num > max) {
+                    if (min == int.MIN_VALUE) {
+                        throw new Error("Expected integer smaller than or equal to " + max + " for " + error + ", got \"" + attr + "\".");
+                    }
+                    else if (max == int.MAX_VALUE) {
+                        throw new Error("Expected integer larger then or equal to " + min + " for " + error + ", got \"" + attr + "\".");
+                    }
+                    else {
+                        throw new Error("Expected integer value within ( " + min + ", " + max + " ) for " + error + ", got \"" + attr + "\".");
+                    }
+                }
+                return num;
+            }
+        }
+
+        static public function readNumberJson(attr:*, def:Number, error:String, min:Number = int.MIN_VALUE, max:Number = int.MAX_VALUE):Number {
+            var str:String = attr;
+            var match:String = "";
+            for (var i:int = 0; i < str.length; i++) {
+                match = match + "[0-9\\-\\.]";
+            }
+            if (!str.match(match)) {
+                throw new Error("Expected number value for " + error + ", got \"" + attr + "\".");
+            }
+            else {
+                var num:Number = (Number)(str);
+                if (num < min || num > max) {
+                    if (min == int.MIN_VALUE) {
+                        throw new Error("Expected number smaller than or equal to " + max + " for " + error + ", got \"" + attr + "\".");
+                    }
+                    else if (max == int.MAX_VALUE) {
+                        throw new Error("Expected number larger then or equal to " + min + " for " + error + ", got \"" + attr + "\".");
+                    }
+                    else {
+                        throw new Error("Expected number value within ( " + min + ", " + max + " ) for " + error + ", got \"" + attr + "\".");
+                    }
+                }
+                return num;
+            }
+        }
+        static public function readNumberXml(attr:*, def:Number, error:String, min:Number = int.MIN_VALUE, max:Number = int.MAX_VALUE):Number {
             if (attr.length() == 0) {
                 return def;
             }
@@ -95,18 +150,36 @@
             }
         }
 
-        static public function readBoolean(attr:*, def:Boolean, error:String):Boolean {
+        static public function readBooleanXml(attr:*, def:Boolean, error:String):Boolean {
             if (attr.length() == 0) {
                 return def;
             }
-            else if (attr[0] == "true" || attr[0] == "1" || attr[0] == "t") {
+
+            var value:String = String(attr[0]);
+            value = value.toLocaleLowerCase();
+
+            if (value == "true" || value == "1" || value == "t") {
                 return true;
             }
-            else if (attr[0] == "false" || attr[0] == "0" || attr[0] == "f") {
+            else if (value == "false" || value == "0" || value == "f") {
                 return false;
             }
             else {
-                throw new Error("Expected boolean value for " + error + ", got \"" + attr[0] + "\".");
+                throw new Error("Expected boolean value for " + error + ", got \"" + value + "\".");
+            }
+        }
+
+        static public function readBooleanJson(attr:*, def:Boolean, error:String):Boolean {
+            attr = attr is String ? attr.toLocaleLowerCase() : attr;
+
+            if (attr == "true" || attr == "1" || attr == "t" || attr === true) {
+                return true;
+            }
+            else if (attr == "false" || attr == "0" || attr == "f" || attr === false) {
+                return false;
+            }
+            else {
+                throw new Error("Expected boolean value for " + error + ", got \"" + attr + "\".");
             }
         }
 
@@ -158,38 +231,75 @@
             }
         }
 
-        static public function readForValue(attr:*, value:Value, error:String):void {
+        static public function readForValueJson(attr:*, value:Value, error:String):void {
+            var e:String = error + " -> " + value.definition.name;
+
+            if (value.datatype == Boolean) {
+                value.value = readBooleanJson(attr, value.definition.def, e);
+            }
+            else if (value.datatype == int) {
+                value.value = readIntJson(attr, value.definition.def, e, value.definition.min, value.definition.max);
+            }
+            else if (value.datatype == Number) {
+                value.value = readNumberJson(attr, value.definition.def, e, value.definition.min, value.definition.max);
+            }
+            else if (value.datatype == String) {
+                value.value = readStringJson(attr, value.definition.def);
+            }
+        }
+
+        static public function readForValueXml(attr:*, value:Value, error:String):void {
             var e:String = error + " -> " + attr.name().localName;
 
             if (value.datatype == Boolean) {
-                value.value = readBoolean(attr, value.definition.def, e);
+                value.value = readBooleanXml(attr, value.definition.def, e);
             }
             else if (value.datatype == int) {
-                value.value = readInt(attr, value.definition.def, e, value.definition.min, value.definition.max);
+                value.value = readIntXml(attr, value.definition.def, e, value.definition.min, value.definition.max);
             }
             else if (value.datatype == Number) {
-                value.value = readNumber(attr, value.definition.def, e, value.definition.min, value.definition.max);
+                value.value = readNumberXml(attr, value.definition.def, e, value.definition.min, value.definition.max);
             }
             else if (value.datatype == String) {
-                value.value = readString(attr, value.definition.def);
+                value.value = readStringXml(attr, value.definition.def);
             }
         }
 
         /* =================== WITH VALUES =================== */
 
-        static public function writeValues(xml:XML, values:Vector.<Value>):void {
+        static public function writeValuesToXml(xml:XML, values:Vector.<Value>):void {
             for each (var v:Value in values) {
                 xml["@" + v.definition.name] = v.value;
             }
         }
+        static public function writeValuesToJson(values:Vector.<Value>):Object {
+            var object:Object = {};
+            for each (var v:Value in values) {
+                object[v.definition.name] = v.value;
+            }
+            return object;
+        }
 
-        static public function readValues(xml:XML, values:Vector.<Value>):void {
+        static public function readValuesJson(jsonArray:Object, values:Vector.<Value>):void {
+            for (var valueName:String in jsonArray) {
+                if (!jsonArray.hasOwnProperty(valueName)){
+                    continue;
+                }
+
+                var v:Value = getValueByName(valueName, values);
+                if (v) {
+                    Reader.readForValueJson(jsonArray[valueName], v, "level");
+                }
+            }
+        }
+
+        static public function readValuesXml(xml:XML, values:Vector.<Value>):void {
             for each (var o:XML in xml.attributes()) {
                 var nodeName:String = QName(o.name()).localName;
 
                 var v:Value = getValueByName(nodeName, values);
                 if (v) {
-                    Reader.readForValue(o, v, "level");
+                    Reader.readForValueXml(o, v, "level");
                 }
             }
         }

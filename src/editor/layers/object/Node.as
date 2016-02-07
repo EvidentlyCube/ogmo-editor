@@ -60,6 +60,13 @@
             drawDot.graphics.endFill();
         }
 
+        public function get json():Object {
+            return {
+                x: x + object.x,
+                y: y + object.y
+            } ;
+        }
+
         public function get xml():XML
         {
             var xml:XML = <node/>;

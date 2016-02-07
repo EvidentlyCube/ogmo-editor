@@ -122,6 +122,31 @@ package editor.layers.tile {
 
         /* ========================== GETS/SETS ========================== */
 
+        override public function get json():Object{
+            var json:Object = {};
+            if (tilemap.empty) {
+                return json;
+            }
+
+            json.tileset = tileset.tilesetName;
+            json.tiles = tilemap.json;
+
+            return json;
+        }
+
+        override public function set json(value:Object):void {
+            if (_tileset) {
+                _tileset = Ogmo.project.getTileset(value.tileset);
+                if (!_tileset) {
+                    throw new Error("Tileset not defined: \"" + value.tileset + "\"");
+                }
+
+                tilemap.tileset = _tileset;
+            }
+
+            tilemap.json = value.tiles;
+        }
+
         override public function get xml():XML {
             if (tilemap.empty) {
                 return null;
@@ -137,17 +162,17 @@ package editor.layers.tile {
             return ret;
         }
 
-        override public function set xml(to:XML):void {
+        override public function set xml(value:XML):void {
             if (_tileset) {
-                _tileset = Ogmo.project.getTileset(to.@set);
+                _tileset = Ogmo.project.getTileset(value.@set);
                 if (!_tileset) {
-                    throw new Error("Tileset not defined: \"" + to.@set + "\"");
+                    throw new Error("Tileset not defined: \"" + value.@set + "\"");
                 }
 
                 tilemap.tileset = _tileset;
             }
 
-            tilemap.setXML(to);
+            tilemap.setXML(value);
         }
 
         public function get tileset():Tileset {

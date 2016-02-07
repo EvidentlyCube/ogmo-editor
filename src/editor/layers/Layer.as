@@ -163,6 +163,14 @@
             return _active;
         }
 
+        public function get json():Object{
+            return {};
+        }
+
+        public function set json(value:Object):void {
+            //OVERRIDE ME!
+        }
+
         public function get xml():XML
         {
             //OVERRIDE ME!

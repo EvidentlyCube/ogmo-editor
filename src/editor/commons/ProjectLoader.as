@@ -43,6 +43,7 @@ package editor.commons {
         public var levelValues:Vector.<ValueDefinition>;
         public var objects:ObjectFolder;
         public var tilesetsCount:uint = 0;
+        public var usesJson:Boolean = false;
 
         //Project Assets
         public var objectsCount:uint = 0;
@@ -75,27 +76,29 @@ package editor.commons {
             }
 
             //Name
-            name = Reader.readString(xml.name, "Untitled Project");
+            name = Reader.readStringXml(xml.name, "Untitled Project");
 
             //Settings
-            defaultWidth = Reader.readInt(xml.settings[0].defaultWidth, 0, "defaultWidth", 1);
-            defaultHeight = Reader.readInt(xml.settings[0].defaultHeight, 0, "defaultHeight", 1);
+            defaultWidth = Reader.readIntXml(xml.settings[0].defaultWidth, 0, "defaultWidth", 1);
+            defaultHeight = Reader.readIntXml(xml.settings[0].defaultHeight, 0, "defaultHeight", 1);
 
-            minWidth = Reader.readInt(xml.settings[0].minWidth, defaultWidth, "minWidth", 1, defaultWidth);
-            minHeight = Reader.readInt(xml.settings[0].minHeight, defaultHeight, "minHeight", 1, defaultHeight);
+            minWidth = Reader.readIntXml(xml.settings[0].minWidth, defaultWidth, "minWidth", 1, defaultWidth);
+            minHeight = Reader.readIntXml(xml.settings[0].minHeight, defaultHeight, "minHeight", 1, defaultHeight);
 
-            maxWidth = Reader.readInt(xml.settings[0].maxWidth, defaultWidth, "maxWidth", defaultWidth);
-            maxHeight = Reader.readInt(xml.settings[0].maxHeight, defaultHeight, "maxHeight", defaultHeight);
+            maxWidth = Reader.readIntXml(xml.settings[0].maxWidth, defaultWidth, "maxWidth", defaultWidth);
+            maxHeight = Reader.readIntXml(xml.settings[0].maxHeight, defaultHeight, "maxHeight", defaultHeight);
 
             bgColor = Reader.readColor24(xml.settings[0].bgColor, DEFAULT_BG_COLOR, "bgColor");
-            exportLevelSize = Reader.readBoolean(xml.settings[0].exportLevelSize, true, "exportLevelSize");
+            exportLevelSize = Reader.readBooleanXml(xml.settings[0].exportLevelSize, true, "exportLevelSize");
 
-            sizeInTiles = Reader.readBoolean(xml.settings[0].sizeInTiles, false, 'sizeInTiles');
-            tileWidth = Reader.readInt(xml.settings[0].tileWidth, 16, 'tileWidth', 2, 1024);
-            tileHeight = Reader.readInt(xml.settings[0].tileHeight, 16, 'tileHeight', 2, 1024);
+            sizeInTiles = Reader.readBooleanXml(xml.settings[0].sizeInTiles, false, 'sizeInTiles');
+            tileWidth = Reader.readIntXml(xml.settings[0].tileWidth, 16, 'tileWidth', 2, 1024);
+            tileHeight = Reader.readIntXml(xml.settings[0].tileHeight, 16, 'tileHeight', 2, 1024);
 
-            ObjectLayerElementButton.gridSize = Reader.readInt(xml.settings[0].objectGridSize, 24, "objectGridSize", 8, 128);
-            ObjectPaletteWindow.windowWidth = Reader.readInt(xml.settings[0].objectsWindowWidth, 128, "objectsWindowWidth", 32, 1920);
+            usesJson = Reader.readBooleanXml(xml.settings[0].usesJson, false, "usesJson");
+
+            ObjectLayerElementButton.gridSize = Reader.readIntXml(xml.settings[0].objectGridSize, 24, "objectGridSize", 8, 128);
+            ObjectPaletteWindow.windowWidth = Reader.readIntXml(xml.settings[0].objectsWindowWidth, 128, "objectsWindowWidth", 32, 1920);
 
             for each(var xmlDefinition:XML in xml..definition) {
                 xmlSubdefinitions[xmlDefinition.@name.toString()] = xmlDefinition.children();
@@ -157,9 +160,9 @@ package editor.commons {
                         throw new Error("Tileset " + o.@name + " has no image attribute.");
                     }
 
-                    var tilesetTileWidth:int = Reader.readInt(o.@tileWidth, 0, "tileset -> tileWidth", 1);
-                    var tilesetTileHeight:int = Reader.readInt(o.@tileHeight, 0, "tileset -> tileHeight", 1);
-                    var paletteScale:Number = Reader.readNumber(o.@paletteScale, 1, "tileset -> paletteScale", 0.1, 10);
+                    var tilesetTileWidth:int = Reader.readIntXml(o.@tileWidth, 0, "tileset -> tileWidth", 1);
+                    var tilesetTileHeight:int = Reader.readIntXml(o.@tileHeight, 0, "tileset -> tileHeight", 1);
+                    var paletteScale:Number = Reader.readNumberXml(o.@paletteScale, 1, "tileset -> paletteScale", 0.1, 10);
 
                     addTileset(o.@name, o.@image, tilesetTileWidth, tilesetTileHeight, paletteScale);
                 }
@@ -187,9 +190,9 @@ package editor.commons {
                     throw new Error("Layer " + o.@name + " has no gridSize attribute.");
                 }
 
-                var gridSize:uint = Reader.readInt(o.@gridSize, 16, o.@name.localName + " -> gridSize", 1);
+                var gridSize:uint = Reader.readIntXml(o.@gridSize, 16, o.@name.localName + " -> gridSize", 1);
                 var gridColor:uint = Reader.readColor32(o.@gridColor, DEFAULT_GRID_COLOR, o.@name.localName + " -> gridColor");
-                var drawGridSize:uint = Reader.readInt(o.@drawGridSize, gridSize, o.@name.localName + " -> drawGridSize", 1);
+                var drawGridSize:uint = Reader.readIntXml(o.@drawGridSize, gridSize, o.@name.localName + " -> drawGridSize", 1);
 
                 if (o.name().localName == "tiles") {
                     //DEFINE TILES LAYER
@@ -197,7 +200,7 @@ package editor.commons {
                         throw new Error("Tiles layer but no tilesets defined.");
                     }
 
-                    var tilesetName:String = Reader.readString(o.@tileset, '');
+                    var tilesetName:String = Reader.readStringXml(o.@tileset, '');
 
                     if (!getTilesetByName(tilesetName)) {
                         throw new Error("Tileset '" + tilesetName + "' is not defined");
@@ -211,11 +214,11 @@ package editor.commons {
                     // DEFINE GRID LAYER
                     lay = new LayerDefinition(LayerDefinition.GRID, o.@name, gridSize, gridColor, drawGridSize);
                     lay.bgColor = Reader.readColor32(o.@bgColor, 0xFF000000, "grid -> bgcolor");
-                    lay.exportAsObjects = Reader.readBoolean(o.@exportAsObjects, false, "grid -> exportAsObjects");
+                    lay.exportAsObjects = Reader.readBooleanXml(o.@exportAsObjects, false, "grid -> exportAsObjects");
                     lay.color = Reader.readColor32(o.@color, 0xFF000000, "grid -> color");
 
                     if (!lay.exportAsObjects) {
-                        lay.newLine = Reader.readString(o.@newLine, "\n");
+                        lay.newLine = Reader.readStringXml(o.@newLine, "\n");
                     } else {
                         lay.newLine = "\n";
                     }
@@ -322,24 +325,24 @@ package editor.commons {
                         throw new Error("Object " + o.@name + " has no height attribute.");
                     }
 
-                    var width:uint = Reader.readInt(o.@width, 1, "object -> width", 1);
-                    var height:uint = Reader.readInt(o.@height, 1, "object -> height", 1);
-                    var imageWidth:uint = Reader.readInt(o.@imageWidth, -1, "object -> imageWidth");
-                    var imageHeight:uint = Reader.readInt(o.@imageHeight, -1, "object -> imageHeight");
-                    var imageOffsetX:int = Reader.readInt(o.@imageOffsetX, 0, "object -> imageOffsetX");
-                    var imageOffsetY:int = Reader.readInt(o.@imageOffsetY, 0, "object -> imageOffsetY");
+                    var width:uint = Reader.readIntXml(o.@width, 1, "object -> width", 1);
+                    var height:uint = Reader.readIntXml(o.@height, 1, "object -> height", 1);
+                    var imageWidth:uint = Reader.readIntXml(o.@imageWidth, -1, "object -> imageWidth");
+                    var imageHeight:uint = Reader.readIntXml(o.@imageHeight, -1, "object -> imageHeight");
+                    var imageOffsetX:int = Reader.readIntXml(o.@imageOffsetX, 0, "object -> imageOffsetX");
+                    var imageOffsetY:int = Reader.readIntXml(o.@imageOffsetY, 0, "object -> imageOffsetY");
 
                     var objDef:ObjectDefinition;
                     objDef = new ObjectDefinition(o.@name, o.@image, width, height, imageWidth, imageHeight, imageOffsetX, imageOffsetY);
-                    objDef.originX = Reader.readInt(o.@originX, 0, "object -> originX");
-                    objDef.originY = Reader.readInt(o.@originY, 0, "object -> originY");
-                    objDef.resizableX = Reader.readBoolean(o.@resizableX, false, "object -> resizableX");
-                    objDef.resizableY = Reader.readBoolean(o.@resizableY, false, "object -> resizableY");
-                    objDef.rotatable = Reader.readBoolean(o.@rotatable, false, "object -> rotatable");
-                    objDef.rotationPrecision = Reader.readNumber(o.@rotationPrecision, 45, "object -> rotationPrecision", 0.1, 359.9);
-                    objDef.exportRadians = Reader.readBoolean(o.@exportRadians, false, "object -> exportRadians");
-                    objDef.limit = Reader.readInt(o.@limit, 0, "object -> limit", 0);
-                    objDef.tile = Reader.readBoolean(o.@tile, false, "object -> tile");
+                    objDef.originX = Reader.readIntXml(o.@originX, 0, "object -> originX");
+                    objDef.originY = Reader.readIntXml(o.@originY, 0, "object -> originY");
+                    objDef.resizableX = Reader.readBooleanXml(o.@resizableX, false, "object -> resizableX");
+                    objDef.resizableY = Reader.readBooleanXml(o.@resizableY, false, "object -> resizableY");
+                    objDef.rotatable = Reader.readBooleanXml(o.@rotatable, false, "object -> rotatable");
+                    objDef.rotationPrecision = Reader.readNumberXml(o.@rotationPrecision, 45, "object -> rotationPrecision", 0.1, 359.9);
+                    objDef.exportRadians = Reader.readBooleanXml(o.@exportRadians, false, "object -> exportRadians");
+                    objDef.limit = Reader.readIntXml(o.@limit, 0, "object -> limit", 0);
+                    objDef.tile = Reader.readBooleanXml(o.@tile, false, "object -> tile");
                     folder.contents.push(objDef);
 
                     //Values
@@ -349,9 +352,9 @@ package editor.commons {
 
                     //Nodes
                     if (o.nodes[0]) {
-                        var drawObject:Boolean = Reader.readBoolean(o.nodes[0].@drawObject, false, "nodes -> drawObject");
-                        var limit:uint = Reader.readInt(o.nodes[0].@limit, -1, "nodes -> limit", 0);
-                        var lineMode:uint = Reader.readInt(o.nodes[0].@lineMode, NodesDefinition.NONE, "nodes -> lineMode", NodesDefinition.NONE, NodesDefinition.FAN);
+                        var drawObject:Boolean = Reader.readBooleanXml(o.nodes[0].@drawObject, false, "nodes -> drawObject");
+                        var limit:uint = Reader.readIntXml(o.nodes[0].@limit, -1, "nodes -> limit", 0);
+                        var lineMode:uint = Reader.readIntXml(o.nodes[0].@lineMode, NodesDefinition.NONE, "nodes -> lineMode", NodesDefinition.NONE, NodesDefinition.FAN);
                         var color:uint = Reader.readColor24(o.nodes[0].@color, NodesDefinition.DEFAULT_COLOR, "nodes -> color");
                         objDef.nodesDefinition = new NodesDefinition(drawObject, limit, lineMode, color);
                     }
@@ -363,11 +366,11 @@ package editor.commons {
                         throw new Error("An object folder has no name attribute!");
                     }
 
-                    var image:String = Reader.readString(o.@image, "");
-                    var imgWidth:int = Reader.readInt(o.@imageWidth, -1, "folder -> imageWidth", 1);
-                    var imgHeight:int = Reader.readInt(o.@imageHeight, -1, "folder -> imageHeight", 1);
-                    var imgOffsetX:int = Reader.readInt(o.@imageOffsetX, 0, "folder -> imageOffsetX", 0);
-                    var imgOffsetY:int = Reader.readInt(o.@imageOffsetY, 0, "folder -> imageOffsetY", 0);
+                    var image:String = Reader.readStringXml(o.@image, "");
+                    var imgWidth:int = Reader.readIntXml(o.@imageWidth, -1, "folder -> imageWidth", 1);
+                    var imgHeight:int = Reader.readIntXml(o.@imageHeight, -1, "folder -> imageHeight", 1);
+                    var imgOffsetX:int = Reader.readIntXml(o.@imageOffsetX, 0, "folder -> imageOffsetX", 0);
+                    var imgOffsetY:int = Reader.readIntXml(o.@imageOffsetY, 0, "folder -> imageOffsetY", 0);
 
                     var newFolder:ObjectFolder = new ObjectFolder(o.@name, image, imgWidth, imgHeight, imgOffsetX, imgOffsetY, folder);
                     folder.contents.push(newFolder);
@@ -378,35 +381,35 @@ package editor.commons {
 
         private function constructValue(o:XML):ValueDefinition {
             var v:ValueDefinition;
-            var name:String = Reader.readString(o.@name);
-            var prettyName:String = Reader.readString(o.@display, name);
+            var name:String = Reader.readStringXml(o.@name);
+            var prettyName:String = Reader.readStringXml(o.@display, name);
 
             switch (String(o.name().localName)) {
                 case("boolean"):
-                    v = new ValueDefinition(name, prettyName, ValueDefinition.TYPE_BOOL, Reader.readBoolean(o.attribute("default"), false, "boolean -> default"));
+                    v = new ValueDefinition(name, prettyName, ValueDefinition.TYPE_BOOL, Reader.readBooleanXml(o.attribute("default"), false, "boolean -> default"));
                     break;
 
                 case("integer"):
-                    v = new ValueDefinition(name, prettyName, ValueDefinition.TYPE_INT, Reader.readInt(o.attribute("default"), 0, "integer -> default"));
-                    v.min = Reader.readInt(o.@min, int.MIN_VALUE, "integer -> min");
-                    v.max = Reader.readInt(o.@max, int.MAX_VALUE, "integer -> max");
-                    v.wraps = Reader.readBoolean(o.@wraps, false, "integer -> max");
+                    v = new ValueDefinition(name, prettyName, ValueDefinition.TYPE_INT, Reader.readIntXml(o.attribute("default"), 0, "integer -> default"));
+                    v.min = Reader.readIntXml(o.@min, int.MIN_VALUE, "integer -> min");
+                    v.max = Reader.readIntXml(o.@max, int.MAX_VALUE, "integer -> max");
+                    v.wraps = Reader.readBooleanXml(o.@wraps, false, "integer -> max");
                     break;
 
                 case("number"):
-                    v = new ValueDefinition(name, prettyName, ValueDefinition.TYPE_NUMBER, Reader.readNumber(o.attribute("default"), 0, "number -> default"));
-                    v.min = Reader.readNumber(o.@min, int.MIN_VALUE, "number -> min");
-                    v.max = Reader.readNumber(o.@max, int.MAX_VALUE, "number -> max");
-                    v.wraps = Reader.readBoolean(o.@wraps, false, "integer -> max");
+                    v = new ValueDefinition(name, prettyName, ValueDefinition.TYPE_NUMBER, Reader.readNumberXml(o.attribute("default"), 0, "number -> default"));
+                    v.min = Reader.readNumberXml(o.@min, int.MIN_VALUE, "number -> min");
+                    v.max = Reader.readNumberXml(o.@max, int.MAX_VALUE, "number -> max");
+                    v.wraps = Reader.readBooleanXml(o.@wraps, false, "integer -> max");
                     break;
 
                 case("string"):
-                    v = new ValueDefinition(name, prettyName, ValueDefinition.TYPE_STRING, Reader.readString(o.attribute("default")));
-                    v.maxLength = Reader.readInt(o.@maxLength, -1, "string -> maxLength");
+                    v = new ValueDefinition(name, prettyName, ValueDefinition.TYPE_STRING, Reader.readStringXml(o.attribute("default")));
+                    v.maxLength = Reader.readIntXml(o.@maxLength, -1, "string -> maxLength");
                     break;
                 case("text"):
-                    v = new ValueDefinition(name, prettyName, ValueDefinition.TYPE_TEXT, Reader.readString(o.attribute("default")));
-                    v.maxLength = Reader.readInt(o.@maxLength, -1, "text -> maxLength");
+                    v = new ValueDefinition(name, prettyName, ValueDefinition.TYPE_TEXT, Reader.readStringXml(o.attribute("default")));
+                    v.maxLength = Reader.readIntXml(o.@maxLength, -1, "text -> maxLength");
                     break;
 
                 case("select"):
@@ -417,7 +420,7 @@ package editor.commons {
                         throw new Error("No options for <select> variable \"" + o.name().localName + '"');
                     }
 
-                    var selectOptions:SelectOption = v.getOptionForValue(Reader.readString(o.attribute("default")));
+                    var selectOptions:SelectOption = v.getOptionForValue(Reader.readStringXml(o.attribute("default")));
 
                     if (!selectOptions) {
                         throw new Error("Default value for select \"" + o.name().localName + '" was not found in the options.');
@@ -426,13 +429,13 @@ package editor.commons {
                     break;
 
                 case("radius"):
-                    v = new ValueDefinition("rotationRadius", prettyName, ValueDefinition.TYPE_RADIUS, Reader.readNumber(o.attribute("default"), 0, "radius -> default"));
-                    v.min = Reader.readNumber(o.@min, int.MIN_VALUE, "radius -> min");
-                    v.max = Reader.readNumber(o.@max, int.MAX_VALUE, "radius -> max");
+                    v = new ValueDefinition("rotationRadius", prettyName, ValueDefinition.TYPE_RADIUS, Reader.readNumberXml(o.attribute("default"), 0, "radius -> default"));
+                    v.min = Reader.readNumberXml(o.@min, int.MIN_VALUE, "radius -> min");
+                    v.max = Reader.readNumberXml(o.@max, int.MAX_VALUE, "radius -> max");
                     break;
 
                 case("angle"):
-                    v = new ValueDefinition("rotationAngle", prettyName, ValueDefinition.TYPE_ANGLE, Reader.readNumber(o.attribute("default"), 0, "angle -> default"));
+                    v = new ValueDefinition("rotationAngle", prettyName, ValueDefinition.TYPE_ANGLE, Reader.readNumberXml(o.attribute("default"), 0, "angle -> default"));
                     v.min = -360;
                     v.max = 360;
                     v.wraps = true;

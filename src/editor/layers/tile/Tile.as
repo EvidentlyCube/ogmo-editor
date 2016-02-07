@@ -43,6 +43,15 @@
             return collideRect.containsPoint(new Point(x, y));
         }
 
+        public function get json():Object{
+            return {
+                tx: tileRect.x,
+                ty: tileRect.y,
+                x: collideRect.x,
+                y: collideRect.y
+            };
+        }
+
         public function getXML():XML {
             var ret:XML = <tile />;
             ret.setName("tile");
