@@ -230,7 +230,7 @@ package editor.layers.object {
             selectObjectUtility(obj);
 
             Ogmo.windows.windowObjectInfo.setTarget(_selection);
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function selectObjects(objs:Vector.<GameObject>):void {
@@ -239,7 +239,7 @@ package editor.layers.object {
             }
 
             Ogmo.windows.windowObjectInfo.setTarget(_selection);
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function selectAll():void {
@@ -248,7 +248,7 @@ package editor.layers.object {
             }
 
             Ogmo.windows.windowObjectInfo.setTarget(_selection);
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function selectType(name:String):void {
@@ -260,7 +260,7 @@ package editor.layers.object {
             }
 
             Ogmo.windows.windowObjectInfo.setTarget(_selection);
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         private function deselectObjectUtility(obj:GameObject):void {
@@ -275,7 +275,7 @@ package editor.layers.object {
             deselectObjectUtility(obj);
 
             Ogmo.windows.windowObjectInfo.setTarget(_selection);
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function deselectObjects(objs:Vector.<GameObject>):void {
@@ -284,7 +284,7 @@ package editor.layers.object {
             }
 
             Ogmo.windows.windowObjectInfo.setTarget(_selection);
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function deselectAll():void {
@@ -293,7 +293,7 @@ package editor.layers.object {
             }
 
             Ogmo.windows.windowObjectInfo.setTarget(_selection);
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function deselectType(name:String):void {
@@ -305,7 +305,7 @@ package editor.layers.object {
             }
 
             Ogmo.windows.windowObjectInfo.setTarget(_selection);
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         private function toggleSelectObjectUtility(obj:GameObject):void {
@@ -320,7 +320,7 @@ package editor.layers.object {
             toggleSelectObjectUtility(obj);
 
             Ogmo.windows.windowObjectInfo.setTarget(_selection);
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function toggleSelectObjects(objs:Vector.<GameObject>):void {
@@ -329,7 +329,7 @@ package editor.layers.object {
             }
 
             Ogmo.windows.windowObjectInfo.setTarget(_selection);
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function anyObjectSelected(objs:Vector.<GameObject>):Boolean {
@@ -492,6 +492,30 @@ package editor.layers.object {
                 }
                 Ogmo.windows.windowObjectInfo.setTarget(_selection);
             }
+        }
+
+        public function hasObjectOfTypeAt(definition:ObjectDefinition, x:int, y:int):Boolean {
+            for (var i:int = 0; i < _objectsContainer.numChildren; i++) {
+                var object:GameObject = _objectsContainer.getChildAt(i) as GameObject;
+
+                if (object.definition === definition && object.x === x && object.y === y){
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public function getObjectOfTypeAt(definition:ObjectDefinition, x:int, y:int):GameObject {
+            for (var i:int = 0; i < _objectsContainer.numChildren; i++) {
+                var object:GameObject = _objectsContainer.getChildAt(i) as GameObject;
+
+                if (object.definition === definition && object.x === x && object.y === y){
+                    return object;
+                }
+            }
+
+            return null;
         }
 
     }

@@ -69,7 +69,7 @@ package editor.layers.tile {
                 undoStack.splice(0, undoStack.length - UNDO_LIMIT);
             }
 
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function undo():void {
@@ -90,7 +90,7 @@ package editor.layers.tile {
                 Ogmo.level.setTileset(Ogmo.project.getTilesetNumFromName(tilemap.tileset.tilesetName));
             }
 
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         /* ========================== LAYER STUFF ========================== */
@@ -109,7 +109,7 @@ package editor.layers.tile {
                 Ogmo.level.setTileset(Ogmo.project.getTilesetNumFromName(tilemap.tileset.tilesetName));
             }
 
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         private function clearUndo():void {

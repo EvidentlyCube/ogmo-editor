@@ -121,8 +121,7 @@
             }
         }
 
-        private function onClick( e:MouseEvent ):void
-        {
+        public function select():void {
             if (type == FOLDER || type == BACK)
                 Ogmo.windows.setObjectFolder( object as ObjectFolder );
             else
@@ -132,6 +131,11 @@
                 (Ogmo.level.selectedLayer as ObjectLayer).setTool(new ToolObjectPaint(Ogmo.level.selectedLayer as ObjectLayer));
                 selected = true;
             }
+        }
+
+        private function onClick( e:MouseEvent ):void
+        {
+            select();
         }
 
         private function onMouseOver( e:MouseEvent ):void

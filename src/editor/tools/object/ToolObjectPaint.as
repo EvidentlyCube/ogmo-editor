@@ -67,8 +67,14 @@
                 if (ax < 0 || ay < 0 || ax > Ogmo.level.levelWidth - (Ogmo.level.selectedObject.width - Ogmo.level.selectedObject.originX) || ay > Ogmo.level.levelHeight - (Ogmo.level.selectedObject.height - Ogmo.level.selectedObject.originY))
                     return;
 
+                if (objectLayer.hasObjectOfTypeAt(Ogmo.level.selectedObject, ax, ay)){
+                    objectLayer.selectObject(objectLayer.getObjectOfTypeAt(Ogmo.level.selectedObject, ax, ay));
+                    return;
+                }
+
                 //Add the object
                 var o:GameObject;
+
                 o = objectLayer.addObject( Ogmo.level.selectedObject, ax, ay );
                 objectLayer.selectObject( o );
 

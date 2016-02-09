@@ -56,7 +56,7 @@
                 undoStack.splice(0, undoStack.length - UNDO_LIMIT);
             }
 
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function undo():void {
@@ -71,7 +71,7 @@
 
             grid.bitmapData = undoStack.pop();
 
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function redo():void {
@@ -83,7 +83,7 @@
 
             grid.bitmapData = redoStack.pop();
 
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         private function clearUndo():void {

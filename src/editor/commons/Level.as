@@ -89,7 +89,7 @@
 
             selectedLayer.handleGridMode();
 
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function moveEverything(x:int, y:int):void {
@@ -147,7 +147,7 @@
             }
 
             //Refresh menus for undo/redo
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
 
             //dispatch the event
             stage.dispatchEvent(new LayerSelectEvent(selectedLayer));
@@ -410,7 +410,7 @@
             holder.scaleY = holder.scaleX;
 
             Ogmo.showMessage("Zoom: " + (ZOOMS[ cur ] * 100) + "%");
-            Ogmo.windowMenu.refreshState();
+            Ogmo.windowMenu.refreshWithDelay();
         }
 
         public function get jsonString():String {
