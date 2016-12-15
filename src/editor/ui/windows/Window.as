@@ -160,6 +160,8 @@
 
         public function enforceBounds():void
         {
+            var edgePadding:int = 32;
+
             //Calculate the distance to the edge
             var edgeX:int     = stage.stageWidth;
             var edgeY:int    = stage.stageHeight;
@@ -171,7 +173,7 @@
             oldHeight     = stage.stageHeight;
 
             //Actually enforce the bounds
-            x = Utils.within( 0, x, edgeX - _bodyWidth );
+            x = Utils.within( edgePadding - _bodyWidth, x, edgeX - edgePadding );
             y = Utils.within( 0 + BAR_HEIGHT, y, edgeY );
         }
 
